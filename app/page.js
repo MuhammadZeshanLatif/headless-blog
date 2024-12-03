@@ -20,7 +20,7 @@ export default async function HomePage() {
         {data.map((post, index) => {
           console.log(post.uagb_featured_image_src); // Correct placement of console.log
           return (
-            <Link key={index} href={`/blog/${post['slug']}`}>
+            <Link href={`/blog/${post['slug']}`}>
             <div className="card" style={{ width: "18rem" }} key={index}>
               <img 
                 src={post['_embedded']['wp:featuredmedia'][0]['source_url'] || "default-image.jpg"} 
