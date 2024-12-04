@@ -1,11 +1,8 @@
-'use client'; // For the comments form to handle interactivity
-
-import { useState } from 'react';
 import Head from 'next/head';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default async function PostPage({ params }) {
-  const { slug } = params;
+  const { slug } = params; // Access the slug dynamically from the `params` prop
 
   // Fetch the post based on the slug
   const res = await fetch(
@@ -18,7 +15,7 @@ export default async function PostPage({ params }) {
     return <div>Post not found</div>;
   }
 
-  const post = data[0];
+  const post = data[0]; // Single post data
 
   return (
     <div className="container">
@@ -34,119 +31,58 @@ export default async function PostPage({ params }) {
         />
         <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
       </div>
-      <CommentsForm postId={post.id} />
+      <div className="comments-section mt-5">
+        <h2>Leave a Comment</h2>
+        <form>
+          <div className="form-group">
+            <label htmlFor="comment">Comment*</label>
+            <textarea className="form-control" id="comment" rows="4" required></textarea>
+          </div>
+          <div className="form-group">
+            <label htmlFor="name">Name*</label>
+            <input type="text" className="form-control" id="name" required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Email*</label>
+            <input type="email" className="form-control" id="email" required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="website">Website</label>
+            <input type="url" className="form-control" id="website" />
+          </div>
+          <button type="submit" className="btn btn-primary">Submit</button>
+        </form>
+      </div>
     </div>
   );
 }
 
-// Comments Form as a Client Component
-function CommentsForm({ postId }) {
-  const [formData, setFormData] = useState({
-    comment: '',
-    name: '',
-    email: '',
-    website: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch(
-        'https://mytests.brisklydispatchlogistics.com/wp-json/wp/v2/comments',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            post: postId,
-            content: formData.comment,
-            author_name: formData.name,
-            author_email: formData.email,
-            author_url: formData.website,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        setMessage('Comment submitted successfully!');
-        setFormData({ comment: '', name: '', email: '', website: '' });
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'Failed to submit comment.');
-      }
-    } catch (error) {
-      console.error('Error submitting comment:', error);
-      setMessage('An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="comments-section mt-5">
-      <h2>Leave a Comment</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="comment">Comment*</label>
-          <textarea
-            className="form-control"
-            id="comment"
-            rows="4"
-            value={formData.comment}
-            onChange={handleInputChange}
-            required
-          ></textarea>
-        </div>
-        <div className="form-group">
-          <label htmlFor="name">Name*</label>
-          <input
-            type="text"
-            className="form-control"
-            id="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="email">Email*</label>
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="website">Website</label>
-          <input
-            type="url"
-            className="form-control"
-            id="website"
-            value={formData.website}
-            onChange={handleInputChange}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Submitting...' : 'Submit'}
-        </button>
-      </form>
-      {message && <div className="mt-3 alert alert-info">{message}</div>}
-    </div>
+// Use Next.js `generateStaticParams` to pre-render routes
+export async function generateStaticParams() {
+  const res = await fetch(
+    'https://mytests.brisklydispatchlogistics.com/wp-json/wp/v2/posts?_embed&per_page=100&page=1'
   );
+  const posts = await res.json();
+
+  // Return an array of params with slugs for all posts
+  return posts.map((post) => ({
+    slug: post.slug,
+  }));
+}
+
+// Configure dynamic metadata
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+
+  const res = await fetch(
+    `https://mytests.brisklydispatchlogistics.com/wp-json/wp/v2/posts?slug=${slug}&_embed`
+  );
+  const data = await res.json();
+
+  if (!data.length) {
+    return { title: 'Post not found' };
+  }
+
+  const post = data[0];
+  return { title: post.title.rendered };
 }
