@@ -27,7 +27,10 @@ export default async function PostPage({ params }) {
       <div className="post">
         <h1 dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         <img
-          src={post._embedded["wp:featuredmedia"][0]?.source_url || "default-image.jpg"}
+          src={
+            post._embedded["wp:featuredmedia"][0]?.source_url ||
+            "default-image.jpg"
+          }
           alt={post.title.rendered}
           className="img-fluid"
         />
@@ -46,9 +49,12 @@ function CommentsForm({ postId }) {
     email: "",
     website: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Token for Authorization
+  const token =
+    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL215dGVzdHMuYnJpc2tseWRpc3BhdGNobG9naXN0aWNzLmNvbSIsImlhdCI6MTczMzQwNTc5OCwibmJmIjoxNzMzNDA1Nzk4LCJleHAiOjE3MzQwMTA1OTgsImRhdGEiOnsidXNlciI6eyJpZCI6IjEifX19.AO-Mno1QIlnEDPqVPonPTD0CM40FWZkReEsEnis49QM";
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -69,9 +75,10 @@ function CommentsForm({ postId }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the token
           },
           body: JSON.stringify({
-            post: postId,
+            post: postId, // Post ID
             content: formData.comment,
             author_name: formData.name,
             author_email: formData.email,
@@ -80,12 +87,18 @@ function CommentsForm({ postId }) {
         }
       );
 
+      const data = await response.json();
+
       if (response.ok) {
         setMessage("Comment submitted successfully!");
-        setFormData({ comment: "", name: "", email: "", website: "" });
+        setFormData({
+          comment: "",
+          name: "",
+          email: "",
+          website: "",
+        });
       } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || "Failed to submit comment.");
+        setMessage(data.message || "Failed to submit comment.");
       }
     } catch (error) {
       console.error("Error submitting comment:", error);
