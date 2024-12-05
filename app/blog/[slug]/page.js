@@ -1,8 +1,7 @@
-'use client'; // For the comments form to handle interactivity
-
-import { useState } from 'react';
-import Head from 'next/head';
-import 'bootstrap/dist/css/bootstrap.min.css';
+"use client"; // For the comments form to handle interactivity
+import { useState } from "react";
+import Head from "next/head";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default async function PostPage({ params }) {
   const { slug } = params;
@@ -28,7 +27,7 @@ export default async function PostPage({ params }) {
       <div className="post">
         <h1 dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         <img
-          src={post._embedded['wp:featuredmedia'][0]?.source_url || 'default-image.jpg'}
+          src={post._embedded["wp:featuredmedia"][0]?.source_url || "default-image.jpg"}
           alt={post.title.rendered}
           className="img-fluid"
         />
@@ -42,11 +41,12 @@ export default async function PostPage({ params }) {
 // Comments Form as a Client Component
 function CommentsForm({ postId }) {
   const [formData, setFormData] = useState({
-    comment: '',
-    name: '',
-    email: '',
-    website: '',
+    comment: "",
+    name: "",
+    email: "",
+    website: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -64,11 +64,11 @@ function CommentsForm({ postId }) {
 
     try {
       const response = await fetch(
-        'https://mytests.brisklydispatchlogistics.com/wp-json/wp/v2/comments',
+        "https://mytests.brisklydispatchlogistics.com/wp-json/wp/v2/comments",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             post: postId,
@@ -81,15 +81,15 @@ function CommentsForm({ postId }) {
       );
 
       if (response.ok) {
-        setMessage('Comment submitted successfully!');
-        setFormData({ comment: '', name: '', email: '', website: '' });
+        setMessage("Comment submitted successfully!");
+        setFormData({ comment: "", name: "", email: "", website: "" });
       } else {
         const errorData = await response.json();
-        setMessage(errorData.message || 'Failed to submit comment.');
+        setMessage(errorData.message || "Failed to submit comment.");
       }
     } catch (error) {
-      console.error('Error submitting comment:', error);
-      setMessage('An unexpected error occurred.');
+      console.error("Error submitting comment:", error);
+      setMessage("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ function CommentsForm({ postId }) {
           />
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Submitting...' : 'Submit'}
+          {loading ? "Submitting..." : "Submit"}
         </button>
       </form>
       {message && <div className="mt-3 alert alert-info">{message}</div>}
